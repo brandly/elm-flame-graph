@@ -1,7 +1,8 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, h1, span, text)
+import Html exposing (Html, button, div, h1, span, text)
 import Html.Attributes exposing (class, style, title)
+import Html.Events exposing (onClick)
 import Set
 
 
@@ -17,12 +18,13 @@ main =
 
 type alias Model =
     { frames : Maybe (List StackFrame)
+    , selected : Maybe (List StackFrame)
     }
 
 
 initialModel : Model
 initialModel =
-    { frames = Just (parse example) }
+    { frames = Just (parse example), selected = Nothing }
 
 
 example : String
@@ -37,12 +39,18 @@ type
 
 
 type Msg
-    = MyMessage
+    = SelectFrames (List StackFrame)
+    | ClearSelected
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
-    ( model, Cmd.none )
+    case action of
+        SelectFrames frames ->
+            ( { model | selected = Just frames }, Cmd.none )
+
+        ClearSelected ->
+            ( { model | selected = Nothing }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -53,11 +61,24 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        [ case model.frames of
-            Just frames ->
-                viewFlameGraph frames
+        [ case model.selected of
+            Just _ ->
+                button [ onClick ClearSelected ] [ text "remove zoom" ]
 
             Nothing ->
+                text ""
+        , case ( model.selected, model.frames ) of
+            ( Just selected, _ ) ->
+                viewFlameGraph
+                    (\_ newSelected -> SelectFrames newSelected)
+                    selected
+
+            ( _, Just selected ) ->
+                viewFlameGraph
+                    (\_ newSelected -> SelectFrames newSelected)
+                    selected
+
+            _ ->
                 text "Loading..."
         ]
 
@@ -216,8 +237,8 @@ labelStyles =
     ]
 
 
-viewFlameGraph : List StackFrame -> Html a
-viewFlameGraph frames =
+viewFlameGraph : (StackFrame -> List StackFrame -> a) -> List StackFrame -> Html a
+viewFlameGraph onBarClick frames =
     let
         total : Int
         total =
@@ -247,9 +268,10 @@ viewFlameGraph frames =
                             [ span
                                 [ style barStyles
                                 , title name
+                                , onClick (onBarClick frame frames)
                                 ]
                                 [ span [ style labelStyles ] [ text name ] ]
-                            , viewFlameGraph children
+                            , viewFlameGraph onBarClick children
                             ]
             )
             frames

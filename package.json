@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "deploy": "make && gh-pages --dist dist/"
+  },
+  "devDependencies": {
+    "gh-pages": "1.1.0",
+    "uglify-js": "3.3.20"
+  }
+}

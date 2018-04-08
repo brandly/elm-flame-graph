@@ -3,4 +3,5 @@ build/
 dist/
 gh-pages/
 *.log
+node_modules/
 

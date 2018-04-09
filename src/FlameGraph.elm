@@ -5,16 +5,18 @@ module FlameGraph
         , view
         )
 
+import Dict
 import Html exposing (Html, button, div, span, text)
 import Html.Attributes exposing (style, title)
 import Html.Events exposing (onClick, onMouseEnter)
-import Set
 
 
-type
-    StackFrame
-    -- name, count, children
-    = StackFrame String Int (List StackFrame)
+type StackFrame
+    = StackFrame
+        { name : String
+        , count : Int
+        , children : List StackFrame
+        }
 
 
 
@@ -32,11 +34,7 @@ view onBarHover onBarClick frames =
         total =
             frames
                 |> List.map
-                    (\frame ->
-                        case frame of
-                            StackFrame _ count _ ->
-                                count
-                    )
+                    (\(StackFrame { count }) -> count)
                 |> List.sum
     in
     div
@@ -44,7 +42,7 @@ view onBarHover onBarClick frames =
         (List.map
             (\frame ->
                 case frame of
-                    StackFrame name count children ->
+                    StackFrame { name, count, children } ->
                         div
                             [ style
                                 (( "width"
@@ -100,8 +98,10 @@ labelStyles =
 -- Parse
 
 
-type PreStackFrame
-    = PreStackFrame (List String) Int
+type alias PreStackFrame =
+    { children : List String
+    , count : Int
+    }
 
 
 fromString : String -> List StackFrame
@@ -109,112 +109,120 @@ fromString =
     preParse >> nest
 
 
-initialLast : List a -> Maybe ( List a, a )
-initialLast lst =
-    let
-        divider =
-            List.length lst - 1
-    in
-    case List.head <| List.drop divider lst of
-        Just last ->
-            Just ( List.take divider lst, last )
-
-        Nothing ->
-            Nothing
-
-
 parseLine : String -> Result String ( List String, Int )
-parseLine line =
-    case initialLast (String.words line) of
-        Just ( initial, last ) ->
-            case String.toInt last of
-                Ok num ->
-                    Ok ( String.split ";" (String.join " " initial), num )
-
-                Err error ->
-                    Err error
-
-        Nothing ->
-            Err "Unable to split line"
+parseLine =
+    let
+        f : ( List String, String ) -> Result String ( List String, Int )
+        f ( initial, last ) =
+            last
+                |> String.toInt
+                |> Result.map
+                    (\num -> ( String.split ";" (String.join " " initial), num ))
+    in
+    String.words
+        >> unsnoc
+        >> maybe (Err "Unable to split line") f
 
 
 preParse : String -> List PreStackFrame
-preParse input =
-    String.split "\n" input
-        |> List.map
-            (\line ->
-                case parseLine line of
-                    Ok ( stack, count ) ->
-                        PreStackFrame stack count
+preParse =
+    let
+        f : Result String ( List String, Int ) -> PreStackFrame
+        f result =
+            case result of
+                Ok ( stack, count ) ->
+                    { children = stack
+                    , count = count
+                    }
 
-                    Err error ->
-                        PreStackFrame [] 0
-            )
+                Err _ ->
+                    { children = []
+                    , count = 0
+                    }
+    in
+    String.split "\n"
+        >> List.map (parseLine >> f)
 
 
 nest : List PreStackFrame -> List StackFrame
-nest frames =
-    let
-        namedLists : List ( String, List PreStackFrame )
-        namedLists =
-            frames
-                |> groupBy
-                    (\f ->
-                        case f of
-                            PreStackFrame children _ ->
-                                case List.head children of
-                                    Just name ->
-                                        name
+nest =
+    groupBy
+        (\{ children } ->
+            case List.head children of
+                Just name ->
+                    name
 
-                                    Nothing ->
-                                        ""
-                    )
-                |> List.sortBy (\( name, _ ) -> name)
-
-        frameCount pre =
-            case pre of
-                PreStackFrame _ count ->
-                    count
-    in
-    List.map
-        (\( name, preFrames ) ->
-            let
-                count : Int
-                count =
-                    preFrames |> List.map frameCount |> List.sum
-
-                children =
-                    preFrames
-                        |> List.map
-                            (\pre ->
-                                case pre of
-                                    PreStackFrame lst count ->
-                                        case List.tail lst of
-                                            Just remaining ->
-                                                PreStackFrame remaining count
-
-                                            Nothing ->
-                                                -- TODO: this shouldn't happen, right?
-                                                PreStackFrame [] count
-                            )
-                        |> List.filter
-                            (\pre ->
-                                case pre of
-                                    PreStackFrame lst _ ->
-                                        List.length lst > 0
-                            )
-            in
-            StackFrame name count (nest children)
+                Nothing ->
+                    ""
         )
-        namedLists
+        >> List.map
+            (\( name, preFrames ) ->
+                let
+                    count : Int
+                    count =
+                        preFrames
+                            |> List.map .count
+                            |> List.sum
+
+                    children : List PreStackFrame
+                    children =
+                        preFrames
+                            |> List.filterMap
+                                (\{ children, count } ->
+                                    List.tail children
+                                        |> Maybe.map
+                                            (\remaining ->
+                                                { children = remaining
+                                                , count = count
+                                                }
+                                            )
+                                )
+                in
+                StackFrame
+                    { name = name
+                    , count = count
+                    , children = nest children
+                    }
+            )
 
 
 groupBy : (a -> comparable) -> List a -> List ( comparable, List a )
-groupBy fn lst =
-    let
-        keys =
-            Set.fromList (List.map fn lst)
-    in
-    List.map
-        (\key -> ( key, List.filter ((==) key << fn) lst ))
-        (Set.toList keys)
+groupBy fn =
+    List.foldr
+        (\x ->
+            Dict.update
+                (fn x)
+                (Maybe.withDefault [] >> cons x >> Just)
+        )
+        Dict.empty
+        >> Dict.toList
+
+
+cons : a -> List a -> List a
+cons =
+    (::)
+
+
+unsnoc : List a -> Maybe ( List a, a )
+unsnoc xs =
+    case xs of
+        [] ->
+            Nothing
+
+        x :: xs ->
+            case unsnoc xs of
+                Nothing ->
+                    Just ( [], x )
+
+                Just ( ys, y ) ->
+                    Just ( x :: ys, y )
+
+
+maybe : b -> (a -> b) -> Maybe a -> b
+maybe z f mx =
+    case mx of
+        Nothing ->
+            z
+
+        Just x ->
+            f x

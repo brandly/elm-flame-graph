@@ -1,5 +1,9 @@
 PATH := node_modules/.bin/:$(PATH)
 
+.PHONY: watch
+watch:
+	elm live src/Main.elm
+
 dist: dist/app.min.js dist/index.html
 
 dist/index.html: src/index.html

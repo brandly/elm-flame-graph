@@ -71,11 +71,7 @@ view model =
         sumFrames : List StackFrame -> Int
         sumFrames =
             List.map
-                (\frame ->
-                    case frame of
-                        StackFrame _ count _ ->
-                            count
-                )
+                (\(StackFrame { count }) -> count)
                 >> List.sum
 
         totalSamples =
@@ -97,7 +93,7 @@ view model =
             [ case model.hovered of
                 Just frame ->
                     case frame of
-                        StackFrame name count _ ->
+                        StackFrame { name, count } ->
                             text
                                 (name
                                     ++ " ("

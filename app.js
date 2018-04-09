@@ -9476,8 +9476,13 @@ var _user$project$Main$view = function (model) {
 				return _user$project$Main$FrameHover(frame);
 			}),
 		F2(
-			function (_p6, newSelected) {
-				return _user$project$Main$SelectFrames(newSelected);
+			function (frame, _p6) {
+				return _user$project$Main$SelectFrames(
+					{
+						ctor: '::',
+						_0: frame,
+						_1: {ctor: '[]'}
+					});
 			}));
 	return A2(
 		_elm_lang$html$Html$div,

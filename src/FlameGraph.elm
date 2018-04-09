@@ -185,6 +185,7 @@ nest =
                     , children = nest children
                     }
             )
+        >> List.filter (\(StackFrame { name }) -> name /= "")
 
 
 groupBy : (a -> comparable) -> List a -> List ( comparable, List a )

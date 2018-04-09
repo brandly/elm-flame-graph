@@ -9301,52 +9301,58 @@ var _user$project$FlameGraph$StackFrame = function (a) {
 };
 var _user$project$FlameGraph$nest = function (_p16) {
 	return A2(
-		_elm_lang$core$List$map,
+		_elm_lang$core$List$filter,
 		function (_p17) {
 			var _p18 = _p17;
-			var _p21 = _p18._1;
-			var children = A2(
-				_elm_lang$core$List$filterMap,
-				function (_p19) {
-					var _p20 = _p19;
-					return A2(
-						_elm_lang$core$Maybe$map,
-						function (remaining) {
-							return {children: remaining, count: _p20.count};
-						},
-						_elm_lang$core$List$tail(_p20.children));
-				},
-				_p21);
-			var count = _elm_lang$core$List$sum(
-				A2(
-					_elm_lang$core$List$map,
-					function (_) {
-						return _.count;
-					},
-					_p21));
-			return _user$project$FlameGraph$StackFrame(
-				{
-					name: _p18._0,
-					count: count,
-					children: _user$project$FlameGraph$nest(children)
-				});
+			return !_elm_lang$core$Native_Utils.eq(_p18._0.name, '');
 		},
 		A2(
-			_user$project$FlameGraph$groupBy,
-			function (_p22) {
-				var _p23 = _p22;
-				var _p24 = _elm_lang$core$List$head(_p23.children);
-				if (_p24.ctor === 'Just') {
-					return _p24._0;
-				} else {
-					return '';
-				}
+			_elm_lang$core$List$map,
+			function (_p19) {
+				var _p20 = _p19;
+				var _p23 = _p20._1;
+				var children = A2(
+					_elm_lang$core$List$filterMap,
+					function (_p21) {
+						var _p22 = _p21;
+						return A2(
+							_elm_lang$core$Maybe$map,
+							function (remaining) {
+								return {children: remaining, count: _p22.count};
+							},
+							_elm_lang$core$List$tail(_p22.children));
+					},
+					_p23);
+				var count = _elm_lang$core$List$sum(
+					A2(
+						_elm_lang$core$List$map,
+						function (_) {
+							return _.count;
+						},
+						_p23));
+				return _user$project$FlameGraph$StackFrame(
+					{
+						name: _p20._0,
+						count: count,
+						children: _user$project$FlameGraph$nest(children)
+					});
 			},
-			_p16));
+			A2(
+				_user$project$FlameGraph$groupBy,
+				function (_p24) {
+					var _p25 = _p24;
+					var _p26 = _elm_lang$core$List$head(_p25.children);
+					if (_p26.ctor === 'Just') {
+						return _p26._0;
+					} else {
+						return '';
+					}
+				},
+				_p16)));
 };
-var _user$project$FlameGraph$fromString = function (_p25) {
+var _user$project$FlameGraph$fromString = function (_p27) {
 	return _user$project$FlameGraph$nest(
-		_user$project$FlameGraph$preParse(_p25));
+		_user$project$FlameGraph$preParse(_p27));
 };
 
 var _user$project$Main$containerStyles = {
@@ -9545,31 +9551,30 @@ var _user$project$Main$view = function (model) {
 						_0: function () {
 							var _p8 = model.hovered;
 							if (_p8.ctor === 'Just') {
-								var _p9 = _p8._0;
-								var _p10 = _p9._0.count;
+								var _p9 = _p8._0._0.count;
 								return _elm_lang$html$Html$text(
 									A2(
 										_elm_lang$core$Basics_ops['++'],
-										_p9._0.name,
+										_p8._0._0.name,
 										A2(
 											_elm_lang$core$Basics_ops['++'],
 											' (',
 											A2(
 												_elm_lang$core$Basics_ops['++'],
-												_elm_lang$core$Basics$toString(_p10),
+												_elm_lang$core$Basics$toString(_p9),
 												A2(
 													_elm_lang$core$Basics_ops['++'],
 													' sample',
 													A2(
 														_elm_lang$core$Basics_ops['++'],
-														(_elm_lang$core$Native_Utils.cmp(_p10, 1) > 0) ? 's' : '',
+														(_elm_lang$core$Native_Utils.cmp(_p9, 1) > 0) ? 's' : '',
 														A2(
 															_elm_lang$core$Basics_ops['++'],
 															', ',
 															A2(
 																_elm_lang$core$Basics_ops['++'],
 																_elm_lang$core$Basics$toString(
-																	(_elm_lang$core$Basics$toFloat(_p10) / _elm_lang$core$Basics$toFloat(totalSamples)) * 100),
+																	(_elm_lang$core$Basics$toFloat(_p9) / _elm_lang$core$Basics$toFloat(totalSamples)) * 100),
 																'%)'))))))));
 							} else {
 								return _elm_lang$html$Html$text('');
@@ -9580,21 +9585,21 @@ var _user$project$Main$view = function (model) {
 				_1: {
 					ctor: '::',
 					_0: function () {
-						var _p11 = {ctor: '_Tuple2', _0: model.selected, _1: model.frames};
-						_v6_2:
+						var _p10 = {ctor: '_Tuple2', _0: model.selected, _1: model.frames};
+						_v5_2:
 						do {
-							if (_p11.ctor === '_Tuple2') {
-								if (_p11._0.ctor === 'Just') {
-									return flames(_p11._0._0);
+							if (_p10.ctor === '_Tuple2') {
+								if (_p10._0.ctor === 'Just') {
+									return flames(_p10._0._0);
 								} else {
-									if (_p11._1.ctor === 'Just') {
-										return flames(_p11._1._0);
+									if (_p10._1.ctor === 'Just') {
+										return flames(_p10._1._0);
 									} else {
-										break _v6_2;
+										break _v5_2;
 									}
 								}
 							} else {
-								break _v6_2;
+								break _v5_2;
 							}
 						} while(false);
 						return _elm_lang$html$Html$text('Loading...');

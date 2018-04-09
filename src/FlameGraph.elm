@@ -148,15 +148,8 @@ preParse =
 
 nest : List PreStackFrame -> List StackFrame
 nest =
-    groupBy
-        (\{ children } ->
-            case List.head children of
-                Just name ->
-                    name
-
-                Nothing ->
-                    ""
-        )
+    groupBy (.children >> List.head >> Maybe.withDefault "")
+        >> List.filter (\( name, _ ) -> name /= "")
         >> List.map
             (\( name, preFrames ) ->
                 let
@@ -186,7 +179,6 @@ nest =
                     , children = nest children
                     }
             )
-        >> List.filter (\(StackFrame { name }) -> name /= "")
 
 
 groupBy : (a -> comparable) -> List a -> List ( comparable, List a )

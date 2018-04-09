@@ -83,6 +83,7 @@ containerStyles =
 view : Model -> Html Msg
 view model =
     let
+        flames : List StackFrame -> Html Msg
         flames =
             FlameGraph.view
                 (\frame _ -> FrameHover frame)
@@ -94,13 +95,9 @@ view model =
                 (\(StackFrame { count }) -> count)
                 >> List.sum
 
+        totalSamples : Int
         totalSamples =
-            case model.frames |> Maybe.map sumFrames of
-                Just total ->
-                    total
-
-                Nothing ->
-                    0
+            model.frames |> Maybe.map sumFrames |> Maybe.withDefault 0
     in
     div [ style containerStyles ]
         [ case model.selected of
@@ -145,8 +142,8 @@ view model =
             ( Just selected, _ ) ->
                 flames selected
 
-            ( _, Just selected ) ->
-                flames selected
+            ( _, Just root ) ->
+                flames root
 
             _ ->
                 text "Loading..."

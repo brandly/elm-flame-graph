@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "start": "elm reactor",
     "deploy": "make && gh-pages --dist dist/"
   },
   "devDependencies": {

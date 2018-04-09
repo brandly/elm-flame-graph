@@ -7,7 +7,7 @@ module FlameGraph
 
 import Html exposing (Html, button, div, span, text)
 import Html.Attributes exposing (style, title)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onMouseEnter)
 import Set
 
 
@@ -21,8 +21,12 @@ type
 -- Render
 
 
-view : (StackFrame -> List StackFrame -> a) -> List StackFrame -> Html a
-view onBarClick frames =
+view :
+    (StackFrame -> List StackFrame -> a)
+    -> (StackFrame -> List StackFrame -> a)
+    -> List StackFrame
+    -> Html a
+view onBarHover onBarClick frames =
     let
         total : Int
         total =
@@ -53,9 +57,10 @@ view onBarClick frames =
                                 [ style barStyles
                                 , title name
                                 , onClick (onBarClick frame frames)
+                                , onMouseEnter (onBarHover frame frames)
                                 ]
                                 [ span [ style labelStyles ] [ text name ] ]
-                            , view onBarClick children
+                            , view onBarHover onBarClick children
                             ]
             )
             frames
@@ -72,8 +77,9 @@ flameStyles =
 barStyles =
     [ ( "position", "relative" )
     , ( "overflow-x", "hidden" )
-    , ( "height", "15px" )
+    , ( "height", "14px" )
     , ( "border", "1px solid #666" )
+    , ( "margin", "1px" )
     ]
 
 

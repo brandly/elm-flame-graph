@@ -1,7 +1,8 @@
 module Main exposing (..)
 
 import FlameGraph exposing (StackFrame(..))
-import Html exposing (Html, button, div, text)
+import Html exposing (Html, button, div, pre, text)
+import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 
 
@@ -18,6 +19,7 @@ main =
 type alias Model =
     { frames : Maybe (List StackFrame)
     , selected : Maybe (List StackFrame)
+    , hovered : Maybe StackFrame
     }
 
 
@@ -25,6 +27,7 @@ initialModel : Model
 initialModel =
     { frames = Just (FlameGraph.fromString example)
     , selected = Nothing
+    , hovered = Nothing
     }
 
 
@@ -36,6 +39,7 @@ example =
 type Msg
     = SelectFrames (List StackFrame)
     | ClearSelected
+    | FrameHover StackFrame
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -47,6 +51,9 @@ update action model =
         ClearSelected ->
             ( { model | selected = Nothing }, Cmd.none )
 
+        FrameHover frame ->
+            ( { model | hovered = Just frame }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -57,15 +64,59 @@ view : Model -> Html Msg
 view model =
     let
         flames =
-            FlameGraph.view (\_ newSelected -> SelectFrames newSelected)
+            FlameGraph.view
+                (\frame _ -> FrameHover frame)
+                (\_ newSelected -> SelectFrames newSelected)
+
+        sumFrames : List StackFrame -> Int
+        sumFrames =
+            List.map
+                (\frame ->
+                    case frame of
+                        StackFrame _ count _ ->
+                            count
+                )
+                >> List.sum
+
+        totalSamples =
+            case model.frames |> Maybe.map sumFrames of
+                Just total ->
+                    total
+
+                Nothing ->
+                    0
     in
     div []
         [ case model.selected of
             Just _ ->
-                button [ onClick ClearSelected ] [ text "reset zoom" ]
+                button [ style [ ( "float", "left" ), ( "margin", "0 12px" ) ], onClick ClearSelected ] [ text "reset zoom" ]
 
             Nothing ->
                 text ""
+        , pre [ style [ ( "padding", "0 12px" ) ] ]
+            [ case model.hovered of
+                Just frame ->
+                    case frame of
+                        StackFrame name count _ ->
+                            text
+                                (name
+                                    ++ " ("
+                                    ++ toString count
+                                    ++ " sample"
+                                    ++ (if count > 1 then
+                                            "s"
+                                        else
+                                            ""
+                                       )
+                                    ++ ", "
+                                    -- TODO: toFixed??
+                                    ++ toString (toFloat count / toFloat totalSamples * 100)
+                                    ++ "%)"
+                                )
+
+                Nothing ->
+                    text ""
+            ]
         , case ( model.selected, model.frames ) of
             ( Just selected, _ ) ->
                 flames selected

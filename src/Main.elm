@@ -60,23 +60,23 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
+    let
+        flames =
+            viewFlameGraph (\_ newSelected -> SelectFrames newSelected)
+    in
     div []
         [ case model.selected of
             Just _ ->
-                button [ onClick ClearSelected ] [ text "remove zoom" ]
+                button [ onClick ClearSelected ] [ text "reset zoom" ]
 
             Nothing ->
                 text ""
         , case ( model.selected, model.frames ) of
             ( Just selected, _ ) ->
-                viewFlameGraph
-                    (\_ newSelected -> SelectFrames newSelected)
-                    selected
+                flames selected
 
             ( _, Just selected ) ->
-                viewFlameGraph
-                    (\_ newSelected -> SelectFrames newSelected)
-                    selected
+                flames selected
 
             _ ->
                 text "Loading..."
@@ -140,41 +140,35 @@ nest frames =
     let
         namedLists : List ( String, List PreStackFrame )
         namedLists =
-            groupBy
-                (\f ->
-                    case f of
-                        PreStackFrame children _ ->
-                            case List.head children of
-                                Just name ->
-                                    name
+            frames
+                |> groupBy
+                    (\f ->
+                        case f of
+                            PreStackFrame children _ ->
+                                case List.head children of
+                                    Just name ->
+                                        name
 
-                                Nothing ->
-                                    ""
-                )
-                frames
+                                    Nothing ->
+                                        ""
+                    )
+                |> List.sortBy (\( name, _ ) -> name)
+
+        frameCount pre =
+            case pre of
+                PreStackFrame _ count ->
+                    count
     in
     List.map
         (\( name, preFrames ) ->
             let
                 count : Int
                 count =
-                    List.sum <|
-                        List.map
-                            (\pre ->
-                                case pre of
-                                    PreStackFrame _ count ->
-                                        count
-                            )
-                            preFrames
+                    preFrames |> List.map frameCount |> List.sum
 
                 children =
-                    List.filter
-                        (\pre ->
-                            case pre of
-                                PreStackFrame lst _ ->
-                                    List.length lst > 0
-                        )
-                        (List.map
+                    preFrames
+                        |> List.map
                             (\pre ->
                                 case pre of
                                     PreStackFrame lst count ->
@@ -186,8 +180,12 @@ nest frames =
                                                 -- TODO: this shouldn't happen, right?
                                                 PreStackFrame [] count
                             )
-                            preFrames
-                        )
+                        |> List.filter
+                            (\pre ->
+                                case pre of
+                                    PreStackFrame lst _ ->
+                                        List.length lst > 0
+                            )
             in
             StackFrame name count (nest children)
         )

@@ -86,7 +86,7 @@ view model =
         flames =
             FlameGraph.view
                 (\frame _ -> FrameHover frame)
-                (\_ newSelected -> SelectFrames newSelected)
+                (\frame _ -> SelectFrames [ frame ])
 
         sumFrames : List StackFrame -> Int
         sumFrames =

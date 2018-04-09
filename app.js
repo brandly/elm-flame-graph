@@ -9144,7 +9144,7 @@ var _user$project$FlameGraph$preParse = function () {
 }();
 var _user$project$FlameGraph$labelStyles = {
 	ctor: '::',
-	_0: {ctor: '_Tuple2', _0: 'font-size', _1: '10px'},
+	_0: {ctor: '_Tuple2', _0: 'font-size', _1: '11px'},
 	_1: {
 		ctor: '::',
 		_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
@@ -9175,11 +9175,15 @@ var _user$project$FlameGraph$barStyles = {
 			_0: {ctor: '_Tuple2', _0: 'height', _1: '14px'},
 			_1: {
 				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'border', _1: '1px solid #666'},
+				_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(89, 235, 89, 0.3)'},
 				_1: {
 					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'margin', _1: '1px'},
-					_1: {ctor: '[]'}
+					_0: {ctor: '_Tuple2', _0: 'border-radius', _1: '2px'},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'margin', _1: '1px'},
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		}
@@ -9345,6 +9349,19 @@ var _user$project$FlameGraph$fromString = function (_p25) {
 		_user$project$FlameGraph$preParse(_p25));
 };
 
+var _user$project$Main$containerStyles = {
+	ctor: '::',
+	_0: {ctor: '_Tuple2', _0: 'width', _1: '1080px'},
+	_1: {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 'max-width', _1: '100%'},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+			_1: {ctor: '[]'}
+		}
+	}
+};
 var _user$project$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$batch(
 		{ctor: '[]'});
@@ -9458,7 +9475,11 @@ var _user$project$Main$view = function (model) {
 			}));
 	return A2(
 		_elm_lang$html$Html$div,
-		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$style(_user$project$Main$containerStyles),
+			_1: {ctor: '[]'}
+		},
 		{
 			ctor: '::',
 			_0: function () {
@@ -9475,7 +9496,19 @@ var _user$project$Main$view = function (model) {
 									_1: {
 										ctor: '::',
 										_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 12px'},
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'border', _1: '1px solid #CCC'},
+											_1: {
+												ctor: '::',
+												_0: {ctor: '_Tuple2', _0: 'border-radius', _1: '2px'},
+												_1: {
+													ctor: '::',
+													_0: {ctor: '_Tuple2', _0: 'cursor', _1: 'pointer'},
+													_1: {ctor: '[]'}
+												}
+											}
+										}
 									}
 								}),
 							_1: {

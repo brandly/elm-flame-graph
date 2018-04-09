@@ -4,6 +4,7 @@
     "deploy": "make && gh-pages --dist dist/"
   },
   "devDependencies": {
+    "elm-live": "2.7.5",
     "gh-pages": "1.1.0",
     "uglify-js": "3.3.20"
   }

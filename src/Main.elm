@@ -23,7 +23,7 @@ type alias Model =
 
 initialModel : Model
 initialModel =
-    { frames = Just (FlameGraph.parse example)
+    { frames = Just (FlameGraph.fromString example)
     , selected = Nothing
     }
 

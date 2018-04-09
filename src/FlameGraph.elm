@@ -1,7 +1,7 @@
 module FlameGraph
     exposing
         ( StackFrame(..)
-        , parse
+        , fromString
         , view
         )
 
@@ -98,8 +98,8 @@ type PreStackFrame
     = PreStackFrame (List String) Int
 
 
-parse : String -> List StackFrame
-parse =
+fromString : String -> List StackFrame
+fromString =
     preParse >> nest
 
 

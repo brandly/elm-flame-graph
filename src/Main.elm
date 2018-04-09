@@ -121,24 +121,22 @@ view model =
                 text ""
         , pre [ style [ ( "padding", "0 12px" ) ] ]
             [ case model.hovered of
-                Just frame ->
-                    case frame of
-                        StackFrame { name, count } ->
-                            text
-                                (name
-                                    ++ " ("
-                                    ++ toString count
-                                    ++ " sample"
-                                    ++ (if count > 1 then
-                                            "s"
-                                        else
-                                            ""
-                                       )
-                                    ++ ", "
-                                    -- TODO: toFixed??
-                                    ++ toString (toFloat count / toFloat totalSamples * 100)
-                                    ++ "%)"
-                                )
+                Just (StackFrame { name, count }) ->
+                    text
+                        (name
+                            ++ " ("
+                            ++ toString count
+                            ++ " sample"
+                            ++ (if count > 1 then
+                                    "s"
+                                else
+                                    ""
+                               )
+                            ++ ", "
+                            -- TODO: toFixed??
+                            ++ toString (toFloat count / toFloat totalSamples * 100)
+                            ++ "%)"
+                        )
 
                 Nothing ->
                     text ""

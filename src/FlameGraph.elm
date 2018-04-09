@@ -92,6 +92,7 @@ labelStyles =
     [ ( "font-size", "11px" )
     , ( "position", "absolute" )
     , ( "padding", "0 4px" )
+    , ( "white-space", "nowrap" )
     ]
 
 

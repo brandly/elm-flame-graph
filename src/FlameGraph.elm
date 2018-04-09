@@ -76,7 +76,8 @@ barStyles =
     [ ( "position", "relative" )
     , ( "overflow-x", "hidden" )
     , ( "height", "14px" )
-    , ( "border", "1px solid #666" )
+    , ( "background-color", "rgba(89, 235, 89, 0.3)" )
+    , ( "border-radius", "2px" )
     , ( "margin", "1px" )
     ]
 
@@ -88,7 +89,7 @@ columnStyles =
 
 
 labelStyles =
-    [ ( "font-size", "10px" )
+    [ ( "font-size", "11px" )
     , ( "position", "absolute" )
     , ( "padding", "0 4px" )
     ]

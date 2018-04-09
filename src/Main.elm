@@ -76,6 +76,10 @@ subscriptions model =
     Sub.batch []
 
 
+containerStyles =
+    [ ( "width", "1080px" ), ( "max-width", "100%" ), ( "margin", "0 auto" ) ]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -98,10 +102,20 @@ view model =
                 Nothing ->
                     0
     in
-    div []
+    div [ style containerStyles ]
         [ case model.selected of
             Just _ ->
-                button [ style [ ( "float", "left" ), ( "margin", "0 12px" ) ], onClick ClearSelected ] [ text "reset zoom" ]
+                button
+                    [ style
+                        [ ( "float", "left" )
+                        , ( "margin", "0 12px" )
+                        , ( "border", "1px solid #CCC" )
+                        , ( "border-radius", "2px" )
+                        , ( "cursor", "pointer" )
+                        ]
+                    , onClick ClearSelected
+                    ]
+                    [ text "reset zoom" ]
 
             Nothing ->
                 text ""

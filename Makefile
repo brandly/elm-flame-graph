@@ -1,3 +1,5 @@
+default: dist
+
 PATH := node_modules/.bin/:$(PATH)
 
 .PHONY: watch

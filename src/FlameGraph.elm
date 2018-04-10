@@ -24,12 +24,20 @@ type StackFrame
 -- Render
 
 
-view :
+type alias Viewer a =
     (StackFrame -> List StackFrame -> a)
     -> (StackFrame -> List StackFrame -> a)
     -> List StackFrame
     -> Html a
+
+
+view : Viewer a
 view onBarHover onBarClick frames =
+    viewRow view barStyles onBarHover onBarClick frames
+
+
+viewRow : Viewer a -> List ( String, String ) -> Viewer a
+viewRow viewChildren barStyles onBarHover onBarClick frames =
     let
         total : Int
         total =
@@ -59,7 +67,7 @@ view onBarHover onBarClick frames =
                                 , onMouseEnter (onBarHover frame frames)
                                 ]
                                 [ span [ style labelStyles ] [ text name ] ]
-                            , view onBarHover onBarClick children
+                            , viewChildren onBarHover onBarClick children
                             ]
             )
             frames
@@ -109,19 +117,21 @@ viewFromRoot onBarHover onBarClick frame root =
         preBars =
             stack frame root
                 |> List.map
-                    (\(StackFrame { name, count, children }) ->
-                        view onBarHover
+                    (List.singleton
+                        >> viewRow
+                            (\_ _ _ -> noHtml)
+                            (( "opacity", "0.5" ) :: barStyles)
+                            onBarHover
                             onBarClick
-                            [ StackFrame
-                                { name = name
-                                , count = count
-                                , children = []
-                                }
-                            ]
                     )
     in
     div []
         (preBars ++ [ view onBarHover onBarClick [ frame ] ])
+
+
+noHtml : Html a
+noHtml =
+    text ""
 
 
 stack : StackFrame -> List StackFrame -> List StackFrame

@@ -9470,7 +9470,11 @@ var _user$project$Main$containerStyles = {
 		_1: {
 			ctor: '::',
 			_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
-			_1: {ctor: '[]'}
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'font-family', _1: 'monospace'},
+				_1: {ctor: '[]'}
+			}
 		}
 	}
 };
@@ -9645,29 +9649,44 @@ var _user$project$Main$view = function (model) {
 							if (_p5.ctor === 'Just') {
 								var _p6 = _p5._0._0.count;
 								return _elm_lang$html$Html$text(
-									A2(
-										_elm_lang$core$Basics_ops['++'],
-										_p5._0._0.name,
-										A2(
-											_elm_lang$core$Basics_ops['++'],
-											' (',
-											A2(
-												_elm_lang$core$Basics_ops['++'],
-												_elm_lang$core$Basics$toString(_p6),
-												A2(
-													_elm_lang$core$Basics_ops['++'],
-													' sample',
-													A2(
-														_elm_lang$core$Basics_ops['++'],
-														(_elm_lang$core$Native_Utils.cmp(_p6, 1) > 0) ? 's' : '',
-														A2(
-															_elm_lang$core$Basics_ops['++'],
-															', ',
-															A2(
-																_elm_lang$core$Basics_ops['++'],
-																_elm_lang$core$Basics$toString(
-																	(_elm_lang$core$Basics$toFloat(_p6) / _elm_lang$core$Basics$toFloat(totalSamples)) * 100),
-																'%)'))))))));
+									_elm_lang$core$String$concat(
+										{
+											ctor: '::',
+											_0: _p5._0._0.name,
+											_1: {
+												ctor: '::',
+												_0: ' (',
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$core$Basics$toString(_p6),
+													_1: {
+														ctor: '::',
+														_0: ' sample',
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$core$Native_Utils.eq(_p6, 1) ? '' : 's',
+															_1: {
+																ctor: '::',
+																_0: ', ',
+																_1: {
+																	ctor: '::',
+																	_0: A2(
+																		_elm_lang$core$String$left,
+																		5,
+																		_elm_lang$core$Basics$toString(
+																			(_elm_lang$core$Basics$toFloat(_p6) / _elm_lang$core$Basics$toFloat(totalSamples)) * 100)),
+																	_1: {
+																		ctor: '::',
+																		_0: '%)',
+																		_1: {ctor: '[]'}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}));
 							} else {
 								return _elm_lang$html$Html$text('');
 							}

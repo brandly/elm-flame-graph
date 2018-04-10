@@ -3,6 +3,7 @@ module FlameGraph
         ( StackFrame(..)
         , fromString
         , view
+        , viewFromRoot
         )
 
 import Dict
@@ -94,6 +95,69 @@ labelStyles =
     , ( "padding", "0 4px" )
     , ( "white-space", "nowrap" )
     ]
+
+
+viewFromRoot :
+    (StackFrame -> List StackFrame -> a)
+    -> (StackFrame -> List StackFrame -> a)
+    -> StackFrame
+    -> List StackFrame
+    -> Html a
+viewFromRoot onBarHover onBarClick frame root =
+    let
+        preBars : List (Html a)
+        preBars =
+            stack frame root
+                |> List.map
+                    (\(StackFrame { name, count, children }) ->
+                        view onBarHover
+                            onBarClick
+                            [ StackFrame
+                                { name = name
+                                , count = count
+                                , children = []
+                                }
+                            ]
+                    )
+    in
+    div []
+        (preBars ++ [ view onBarHover onBarClick [ frame ] ])
+
+
+stack : StackFrame -> List StackFrame -> List StackFrame
+stack frame program =
+    let
+        findFrame : StackFrame -> List StackFrame -> Maybe StackFrame
+        findFrame frame program =
+            List.head <| List.filter ((==) frame) program
+
+        recurse : StackFrame -> List StackFrame -> Maybe (List StackFrame)
+        recurse frame program =
+            case findFrame frame program of
+                Just (StackFrame { name }) ->
+                    -- found it
+                    Just []
+
+                Nothing ->
+                    List.map
+                        (\((StackFrame { children }) as fr) -> ( fr, recurse frame children ))
+                        program
+                        |> List.filterMap
+                            (\pair ->
+                                case pair of
+                                    ( fr, Just children ) ->
+                                        Just ( fr, children )
+
+                                    _ ->
+                                        Nothing
+                            )
+                        |> List.head
+                        |> Maybe.map
+                            (\( fr, children ) ->
+                                fr :: children
+                            )
+    in
+    Maybe.withDefault [] (recurse frame program)
 
 
 

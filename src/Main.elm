@@ -135,15 +135,15 @@ view model =
         , case ( model.selected, model.frames ) of
             ( Just selected, Just root ) ->
                 FlameGraph.viewFromRoot
-                    (\frame _ -> FrameHover frame)
-                    (\frame _ -> SelectFrame frame)
+                    FrameHover
+                    SelectFrame
                     selected
                     root
 
             ( _, Just root ) ->
                 FlameGraph.view
-                    (\frame _ -> FrameHover frame)
-                    (\frame _ -> SelectFrame frame)
+                    FrameHover
+                    SelectFrame
                     root
 
             _ ->

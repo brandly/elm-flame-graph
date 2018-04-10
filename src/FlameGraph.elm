@@ -25,8 +25,8 @@ type StackFrame
 
 
 type alias Viewer a =
-    (StackFrame -> List StackFrame -> a)
-    -> (StackFrame -> List StackFrame -> a)
+    (StackFrame -> a)
+    -> (StackFrame -> a)
     -> List StackFrame
     -> Html a
 
@@ -63,8 +63,8 @@ viewRow viewChildren barStyles onBarHover onBarClick frames =
                             [ span
                                 [ style barStyles
                                 , title name
-                                , onClick (onBarClick frame frames)
-                                , onMouseEnter (onBarHover frame frames)
+                                , onClick (onBarClick frame)
+                                , onMouseEnter (onBarHover frame)
                                 ]
                                 [ span [ style labelStyles ] [ text name ] ]
                             , viewChildren onBarHover onBarClick children
@@ -106,8 +106,8 @@ labelStyles =
 
 
 viewFromRoot :
-    (StackFrame -> List StackFrame -> a)
-    -> (StackFrame -> List StackFrame -> a)
+    (StackFrame -> a)
+    -> (StackFrame -> a)
     -> StackFrame
     -> List StackFrame
     -> Html a

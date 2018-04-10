@@ -3,6 +3,7 @@ module FlameGraph
         ( StackFrame(..)
         , fromString
         , view
+        , viewFromRoot
         )
 
 import Dict
@@ -23,12 +24,20 @@ type StackFrame
 -- Render
 
 
-view :
-    (StackFrame -> List StackFrame -> a)
-    -> (StackFrame -> List StackFrame -> a)
+type alias Viewer a =
+    (StackFrame -> a)
+    -> (StackFrame -> a)
     -> List StackFrame
     -> Html a
+
+
+view : Viewer a
 view onBarHover onBarClick frames =
+    viewRow view barStyles onBarHover onBarClick frames
+
+
+viewRow : Viewer a -> List ( String, String ) -> Viewer a
+viewRow viewChildren barStyles onBarHover onBarClick frames =
     let
         total : Int
         total =
@@ -54,11 +63,11 @@ view onBarHover onBarClick frames =
                             [ span
                                 [ style barStyles
                                 , title name
-                                , onClick (onBarClick frame frames)
-                                , onMouseEnter (onBarHover frame frames)
+                                , onClick (onBarClick frame)
+                                , onMouseEnter (onBarHover frame)
                                 ]
                                 [ span [ style labelStyles ] [ text name ] ]
-                            , view onBarHover onBarClick children
+                            , viewChildren onBarHover onBarClick children
                             ]
             )
             frames
@@ -94,6 +103,71 @@ labelStyles =
     , ( "padding", "0 4px" )
     , ( "white-space", "nowrap" )
     ]
+
+
+viewFromRoot :
+    (StackFrame -> a)
+    -> (StackFrame -> a)
+    -> StackFrame
+    -> List StackFrame
+    -> Html a
+viewFromRoot onBarHover onBarClick frame root =
+    let
+        preBars : List (Html a)
+        preBars =
+            stack frame root
+                |> List.map
+                    (List.singleton
+                        >> viewRow
+                            (\_ _ _ -> noHtml)
+                            (( "opacity", "0.5" ) :: barStyles)
+                            onBarHover
+                            onBarClick
+                    )
+    in
+    div []
+        (preBars ++ [ view onBarHover onBarClick [ frame ] ])
+
+
+noHtml : Html a
+noHtml =
+    text ""
+
+
+stack : StackFrame -> List StackFrame -> List StackFrame
+stack frame program =
+    let
+        findFrame : StackFrame -> List StackFrame -> Maybe StackFrame
+        findFrame frame program =
+            List.head <| List.filter ((==) frame) program
+
+        recurse : StackFrame -> List StackFrame -> Maybe (List StackFrame)
+        recurse frame program =
+            case findFrame frame program of
+                Just (StackFrame { name }) ->
+                    -- found it
+                    Just []
+
+                Nothing ->
+                    List.map
+                        (\((StackFrame { children }) as fr) -> ( fr, recurse frame children ))
+                        program
+                        |> List.filterMap
+                            (\pair ->
+                                case pair of
+                                    ( fr, Just children ) ->
+                                        Just ( fr, children )
+
+                                    _ ->
+                                        Nothing
+                            )
+                        |> List.head
+                        |> Maybe.map
+                            (\( fr, children ) ->
+                                fr :: children
+                            )
+    in
+    Maybe.withDefault [] (recurse frame program)
 
 
 

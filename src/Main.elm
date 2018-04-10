@@ -19,7 +19,7 @@ main =
 
 type alias Model =
     { frames : Maybe (List StackFrame)
-    , selected : Maybe (List StackFrame)
+    , selected : Maybe StackFrame
     , hovered : Maybe StackFrame
     }
 
@@ -33,7 +33,7 @@ initialModel =
 
 
 type Msg
-    = SelectFrames (List StackFrame)
+    = SelectFrame StackFrame
     | ClearSelected
     | FrameHover StackFrame
     | FetchExample (Result Http.Error String)
@@ -42,8 +42,8 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
     case action of
-        SelectFrames frames ->
-            ( { model | selected = Just frames }, Cmd.none )
+        SelectFrame frame ->
+            ( { model | selected = Just frame }, Cmd.none )
 
         ClearSelected ->
             ( { model | selected = Nothing }, Cmd.none )
@@ -83,12 +83,6 @@ containerStyles =
 view : Model -> Html Msg
 view model =
     let
-        flames : List StackFrame -> Html Msg
-        flames =
-            FlameGraph.view
-                (\frame _ -> FrameHover frame)
-                (\frame _ -> SelectFrames [ frame ])
-
         sumFrames : List StackFrame -> Int
         sumFrames =
             List.map
@@ -139,11 +133,18 @@ view model =
                     text ""
             ]
         , case ( model.selected, model.frames ) of
-            ( Just selected, _ ) ->
-                flames selected
+            ( Just selected, Just root ) ->
+                FlameGraph.viewFromRoot
+                    FrameHover
+                    SelectFrame
+                    selected
+                    root
 
             ( _, Just root ) ->
-                flames root
+                FlameGraph.view
+                    FrameHover
+                    SelectFrame
+                    root
 
             _ ->
                 text "Loading..."

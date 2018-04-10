@@ -144,7 +144,7 @@ stack frame program =
         recurse : StackFrame -> List StackFrame -> Maybe (List StackFrame)
         recurse frame program =
             case findFrame frame program of
-                Just (StackFrame { name }) ->
+                Just _ ->
                     -- found it
                     Just []
 

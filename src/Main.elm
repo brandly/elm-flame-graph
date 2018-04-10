@@ -77,7 +77,7 @@ subscriptions model =
 
 
 containerStyles =
-    [ ( "width", "1080px" ), ( "max-width", "100%" ), ( "margin", "0 auto" ) ]
+    [ ( "width", "1080px" ), ( "max-width", "100%" ), ( "margin", "0 auto" ), ( "font-family", "monospace" ) ]
 
 
 view : Model -> Html Msg
@@ -113,21 +113,22 @@ view model =
         , pre [ style [ ( "padding", "0 12px" ) ] ]
             [ case model.hovered of
                 Just (StackFrame { name, count }) ->
-                    text
-                        (name
-                            ++ " ("
-                            ++ toString count
-                            ++ " sample"
-                            ++ (if count > 1 then
-                                    "s"
-                                else
-                                    ""
-                               )
-                            ++ ", "
+                    text <|
+                        String.concat
+                            [ name
+                            , " ("
+                            , toString count
+                            , " sample"
+                            , if count == 1 then
+                                ""
+                              else
+                                "s"
+                            , ", "
+
                             -- TODO: toFixed??
-                            ++ toString (toFloat count / toFloat totalSamples * 100)
-                            ++ "%)"
-                        )
+                            , String.left 5 <| toString (toFloat count / toFloat totalSamples * 100)
+                            , "%)"
+                            ]
 
                 Nothing ->
                     text ""

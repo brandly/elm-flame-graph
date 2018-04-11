@@ -86,8 +86,8 @@ barStyles =
     , ( "overflow-x", "hidden" )
     , ( "height", "14px" )
     , ( "background-color", "rgba(89, 235, 89, 0.3)" )
-    , ( "border-radius", "2px" )
-    , ( "margin", "1px" )
+    , ( "border-radius", "3px" )
+    , ( "border", "#FFF 1px solid" )
     ]
 
 

@@ -137,13 +137,13 @@ noHtml =
 stack : StackFrame -> List StackFrame -> List StackFrame
 stack frame program =
     let
-        findFrame : StackFrame -> List StackFrame -> Maybe StackFrame
-        findFrame frame program =
-            List.head <| List.filter ((==) frame) program
+        find : (a -> Bool) -> List a -> Maybe a
+        find pred lst =
+            List.head <| List.filter pred lst
 
         recurse : StackFrame -> List StackFrame -> Maybe (List StackFrame)
         recurse frame program =
-            case findFrame frame program of
+            case find ((==) frame) program of
                 Just _ ->
                     -- found it
                     Just []

@@ -1,5 +1,6 @@
-module Main exposing (..)
+module Main exposing (main)
 
+import Browser
 import FlameGraph exposing (StackFrame(..))
 import Html exposing (Html, button, div, pre, text)
 import Html.Attributes exposing (style)
@@ -7,10 +8,10 @@ import Html.Events exposing (onClick)
 import Http
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
-        { init = ( initialModel, fetchExample )
+    Browser.element
+        { init = \_ -> ( initialModel, fetchExample )
         , update = update
         , view = view
         , subscriptions = subscriptions
@@ -58,8 +59,9 @@ update action model =
             , Cmd.none
             )
 
-        FetchExample (Err e) ->
-            ( Debug.log (toString e) model, Cmd.none )
+        FetchExample (Err _) ->
+            --( Debug.log (toString e) model, Cmd.none )
+            ( model, Cmd.none )
 
 
 fetchExample : Cmd Msg
@@ -68,16 +70,21 @@ fetchExample =
         url =
             "https://brandly.github.io/react-flame-graph/collapsed-perf.txt"
     in
-    Http.send FetchExample (Http.getString url)
+    Http.get { url = url, expect = Http.expectString FetchExample }
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch []
+subscriptions _ =
+    Sub.none
 
 
+containerStyles : List (Html.Attribute a)
 containerStyles =
-    [ ( "width", "1080px" ), ( "max-width", "100%" ), ( "margin", "0 auto" ), ( "font-family", "monospace" ) ]
+    [ style "width" "1080px"
+    , style "max-width" "100%"
+    , style "margin" "0 auto"
+    , style "font-family" "monospace"
+    ]
 
 
 view : Model -> Html Msg
@@ -93,40 +100,37 @@ view model =
         totalSamples =
             model.frames |> Maybe.map sumFrames |> Maybe.withDefault 0
     in
-    div [ style containerStyles ]
+    div containerStyles
         [ case model.selected of
             Just _ ->
                 button
-                    [ style
-                        [ ( "float", "left" )
-                        , ( "margin", "0 12px" )
-                        , ( "border", "1px solid #CCC" )
-                        , ( "border-radius", "2px" )
-                        , ( "cursor", "pointer" )
-                        ]
+                    [ style "float" "left"
+                    , style "margin" "0 12px"
+                    , style "border" "1px solid #CCC"
+                    , style "border-radius" "2px"
+                    , style "cursor" "pointer"
                     , onClick ClearSelected
                     ]
                     [ text "reset zoom" ]
 
             Nothing ->
                 text ""
-        , pre [ style [ ( "padding", "0 12px" ) ] ]
+        , pre [ style "padding" "0 12px" ]
             [ case model.hovered of
                 Just (StackFrame { name, count }) ->
                     text <|
                         String.concat
                             [ name
                             , " ("
-                            , toString count
+                            , String.fromInt count
                             , " sample"
                             , if count == 1 then
                                 ""
+
                               else
                                 "s"
                             , ", "
-
-                            -- TODO: toFixed??
-                            , String.left 5 <| toString (toFloat count / toFloat totalSamples * 100)
+                            , String.left 5 <| String.fromFloat (toFloat count / toFloat totalSamples * 100)
                             , "%)"
                             ]
 

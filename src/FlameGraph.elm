@@ -1,13 +1,12 @@
-module FlameGraph
-    exposing
-        ( StackFrame(..)
-        , fromString
-        , view
-        , viewFromRoot
-        )
+module FlameGraph exposing
+    ( StackFrame(..)
+    , fromString
+    , view
+    , viewFromRoot
+    )
 
 import Dict
-import Html exposing (Html, button, div, span, text)
+import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (style, title)
 import Html.Events exposing (onClick, onMouseEnter)
 
@@ -36,8 +35,8 @@ view onBarHover onBarClick frames =
     viewRow view barStyles onBarHover onBarClick frames
 
 
-viewRow : Viewer a -> List ( String, String ) -> Viewer a
-viewRow viewChildren barStyles onBarHover onBarClick frames =
+viewRow : Viewer a -> List (Html.Attribute a) -> Viewer a
+viewRow viewChildren barStyles_ onBarHover onBarClick frames =
     let
         total : Int
         total =
@@ -46,27 +45,23 @@ viewRow viewChildren barStyles onBarHover onBarClick frames =
                     (\(StackFrame { count }) -> count)
                 |> List.sum
     in
-    div
-        [ style flameStyles ]
+    div flameStyles
         (List.map
             (\frame ->
                 case frame of
                     StackFrame { name, count, children } ->
                         div
-                            [ style
-                                (( "width"
-                                 , toString (toFloat count / toFloat total * 100) ++ "%"
-                                 )
-                                    :: columnStyles
-                                )
-                            ]
+                            (style "width" (String.fromFloat (toFloat count / toFloat total * 100) ++ "%")
+                                :: columnStyles
+                            )
                             [ span
-                                [ style barStyles
-                                , title name
-                                , onClick (onBarClick frame)
-                                , onMouseEnter (onBarHover frame)
-                                ]
-                                [ span [ style labelStyles ] [ text name ] ]
+                                (barStyles_
+                                    ++ [ title name
+                                       , onClick (onBarClick frame)
+                                       , onMouseEnter (onBarHover frame)
+                                       ]
+                                )
+                                [ span labelStyles [ text name ] ]
                             , viewChildren onBarHover onBarClick children
                             ]
             )
@@ -74,34 +69,38 @@ viewRow viewChildren barStyles onBarHover onBarClick frames =
         )
 
 
+flameStyles : List (Html.Attribute a)
 flameStyles =
-    [ ( "width", "100%" )
-    , ( "position", "relative" )
-    , ( "display", "flex" )
+    [ style "width" "100%"
+    , style "position" "relative"
+    , style "display" "flex"
     ]
 
 
+barStyles : List (Html.Attribute a)
 barStyles =
-    [ ( "position", "relative" )
-    , ( "overflow-x", "hidden" )
-    , ( "height", "14px" )
-    , ( "background-color", "rgba(89, 235, 89, 0.3)" )
-    , ( "border-radius", "3px" )
-    , ( "border", "#FFF 1px solid" )
+    [ style "position" "relative"
+    , style "overflow-x" "hidden"
+    , style "height" "14px"
+    , style "background-color" "rgba(89, 235, 89, 0.3)"
+    , style "border-radius" "3px"
+    , style "border" "#FFF 1px solid"
     ]
 
 
+columnStyles : List (Html.Attribute a)
 columnStyles =
-    [ ( "display", "flex" )
-    , ( "flex-direction", "column" )
+    [ style "display" "flex"
+    , style "flex-direction" "column"
     ]
 
 
+labelStyles : List (Html.Attribute a)
 labelStyles =
-    [ ( "font-size", "11px" )
-    , ( "position", "absolute" )
-    , ( "padding", "0 4px" )
-    , ( "white-space", "nowrap" )
+    [ style "font-size" "11px"
+    , style "position" "absolute"
+    , style "padding" "0 4px"
+    , style "white-space" "nowrap"
     ]
 
 
@@ -120,7 +119,7 @@ viewFromRoot onBarHover onBarClick frame root =
                     (List.singleton
                         >> viewRow
                             (\_ _ _ -> noHtml)
-                            (( "opacity", "0.5" ) :: barStyles)
+                            (style "opacity" "0.5" :: barStyles)
                             onBarHover
                             onBarClick
                     )
@@ -142,16 +141,16 @@ stack frame program =
             List.head <| List.filter pred lst
 
         recurse : StackFrame -> List StackFrame -> Maybe (List StackFrame)
-        recurse frame program =
-            case find ((==) frame) program of
+        recurse frame_ program_ =
+            case find ((==) frame_) program_ of
                 Just _ ->
                     -- found it
                     Just []
 
                 Nothing ->
                     List.map
-                        (\((StackFrame { children }) as fr) -> ( fr, recurse frame children ))
-                        program
+                        (\((StackFrame { children }) as fr) -> ( fr, recurse frame_ children ))
+                        program_
                         |> List.filterMap
                             (\pair ->
                                 case pair of
@@ -192,6 +191,7 @@ parseLine =
         f ( initial, last ) =
             last
                 |> String.toInt
+                |> Result.fromMaybe "Unable to parse int"
                 |> Result.map
                     (\num -> ( String.split ";" (String.join " " initial), num ))
     in
@@ -206,8 +206,8 @@ preParse =
         f : Result String ( List String, Int ) -> PreStackFrame
         f result =
             case result of
-                Ok ( stack, count ) ->
-                    { children = stack
+                Ok ( children, count ) ->
+                    { children = children
                     , count = count
                     }
 
@@ -227,14 +227,14 @@ nest =
         >> List.map
             (\( name, preFrames ) ->
                 let
-                    count : Int
-                    count =
+                    count_ : Int
+                    count_ =
                         preFrames
                             |> List.map .count
                             |> List.sum
 
-                    children : List PreStackFrame
-                    children =
+                    children_ : List PreStackFrame
+                    children_ =
                         preFrames
                             |> List.filterMap
                                 (\{ children, count } ->
@@ -249,8 +249,8 @@ nest =
                 in
                 StackFrame
                     { name = name
-                    , count = count
-                    , children = nest children
+                    , count = count_
+                    , children = nest children_
                     }
             )
 
@@ -278,8 +278,8 @@ unsnoc xs =
         [] ->
             Nothing
 
-        x :: xs ->
-            case unsnoc xs of
+        x :: xs_ ->
+            case unsnoc xs_ of
                 Nothing ->
                     Just ( [], x )
 
